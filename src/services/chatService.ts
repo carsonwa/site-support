@@ -3,16 +3,32 @@ import { instructionService } from './instructionService'
 
 const API_URL = 'https://api.openai.com/v1/chat/completions'
 
-export async function sendMessage(messages: Message[], model: string, domain: string): Promise<Message> {
+const supportFunction = {
+  name: "support_response",
+  description: "Respond to a support request",
+  parameters: {
+    type: "object",
+    properties: {
+      reply: { type: "string", description: "The main support message" },
+      cli_command: { type: ["string", "null"], description: "CLI command to suggest, or null" },
+      escalate: { type: "boolean", description: "Whether to escalate the ticket" }
+    },
+    required: ["reply", "cli_command", "escalate"]
+  }
+};
+
+export async function sendMessage(messages: Message[], model: string, domain: string, userName: string): Promise<Message> {
   const systemMessage: Message = {
     role: 'system',
-    content: instructionService.getCombinedInstructions(domain)
+    content: instructionService.getCombinedInstructions(domain, userName)
   };
   const request: ChatCompletionRequest = {
     model,
     messages: [systemMessage, ...messages],
     temperature: 0.7,
-    max_tokens: 500
+    max_tokens: 500,
+    functions: [supportFunction],
+    function_call: "auto"
   }
 
   try {
@@ -30,7 +46,22 @@ export async function sendMessage(messages: Message[], model: string, domain: st
     }
 
     const data: ChatCompletionResponse = await response.json()
-    return data.choices[0].message
+    const message = data.choices[0].message
+
+    // If the response includes a function call, parse it
+    if (message.function_call) {
+      const args = JSON.parse(message.function_call.arguments);
+      return {
+        role: 'assistant',
+        content: args.reply,
+        function_call: {
+          name: message.function_call.name,
+          arguments: message.function_call.arguments
+        }
+      };
+    }
+
+    return message;
   } catch (error) {
     console.error('Error sending message:', error)
     throw error

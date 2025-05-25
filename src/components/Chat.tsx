@@ -30,10 +30,9 @@ export default function Chat() {
   const [selectedDomain, setSelectedDomain] = useState('')
   const [selectedModel, setSelectedModel] = useState('gpt-4.1-mini')
   const [userName, setUserName] = useState('')
-
-  // Escalate Ticket marker detection
-  const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
-  const shouldShowEscalate = lastAssistantMsg && lastAssistantMsg.content.includes('[[ESCALATE_TICKET]]');
+  const [cliCommand, setCliCommand] = useState<string | null>(null)
+  const [showCliPrompt, setShowCliPrompt] = useState(false)
+  const [shouldShowEscalate, setShouldShowEscalate] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,13 +45,25 @@ export default function Chat() {
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
+    setShowCliPrompt(false)
+    setShouldShowEscalate(false)
+    setCliCommand(null)
 
     try {
-      const response = await sendMessage([...messages, userMessage], selectedModel, selectedDomain)
-      setMessages(prev => [...prev, response])
+      const response = await sendMessage([...messages, userMessage], selectedModel, selectedDomain, userName)
+      // If the response includes a function call, parse it
+      if (response.function_call) {
+        const args = JSON.parse(response.function_call.arguments);
+        setMessages(prev => [...prev, { role: 'assistant', content: args.reply }]);
+        setCliCommand(args.cli_command && args.cli_command !== 'null' ? args.cli_command : null);
+        setShowCliPrompt(!!args.cli_command && args.cli_command !== 'null');
+        setShouldShowEscalate(!!args.escalate);
+      } else {
+        // fallback: show raw content
+        setMessages(prev => [...prev, response]);
+      }
     } catch (error) {
       console.error('Error:', error)
-      // Add error message to chat
       setMessages(prev => [
         ...prev,
         {
@@ -157,6 +168,29 @@ export default function Chat() {
         </div>
       </div>
 
+      {/* CLI Command Prompt */}
+      {cliCommand && showCliPrompt && (
+        <div className="p-4 bg-blue-50 border-t border-b border-blue-200 flex flex-col items-center">
+          <div className="mb-2 text-sm text-blue-900 font-semibold">The assistant suggests running this CLI command:</div>
+          <pre className="bg-gray-900 text-green-200 p-4 rounded border border-gray-700 text-sm font-mono mb-2 whitespace-pre-wrap w-full overflow-x-auto" style={{ fontSize: '1rem' }}>{cliCommand}</pre>
+          <div className="flex gap-2">
+            <button
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold"
+              onClick={() => { setShowCliPrompt(false); alert('CLI command executed! (Demo)'); }}
+            >
+              Yes, Run Command
+            </button>
+            <button
+              className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold"
+              onClick={() => setShowCliPrompt(false)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Escalate Ticket Button */}
       {shouldShowEscalate && (
         <div className="p-4 bg-yellow-50 border-t border-b border-yellow-200 flex flex-col items-center">
           <button

@@ -51,8 +51,8 @@ class InstructionService {
     saveToStorage(this.instructions);
   }
 
-  getCombinedInstructions(domain: string): string {
-    return `Current domain: ${domain}\n\n${this.instructions.meta}\n\n${this.instructions.general}\n\n${this.instructions.wordpress}`;
+  getCombinedInstructions(domain: string, userName: string): string {
+    return `Current domain: ${domain}\nCurrent user: ${userName}\n\n${this.instructions.meta}\n\n${this.instructions.general}\n\n${this.instructions.wordpress}`;
   }
 }
 

@@ -1,6 +1,10 @@
 export interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
+  function_call?: {
+    name: string
+    arguments: string
+  }
 }
 
 export interface ChatCompletionRequest {
@@ -8,6 +12,16 @@ export interface ChatCompletionRequest {
   messages: Message[]
   temperature?: number
   max_tokens?: number
+  functions?: Array<{
+    name: string
+    description: string
+    parameters: {
+      type: string
+      properties: Record<string, any>
+      required: string[]
+    }
+  }>
+  function_call?: string
 }
 
 export interface ChatCompletionResponse {
