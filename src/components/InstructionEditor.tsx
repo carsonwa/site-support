@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { instructionService } from '../services/instructionService';
 
+const STORAGE_KEY = 'site-support-instructions';
+
 export default function InstructionEditor() {
   const [instructions, setInstructions] = useState(instructionService.getInstructions());
   const [activeTab, setActiveTab] = useState<'wordpress' | 'general'>('wordpress');
@@ -21,6 +23,11 @@ export default function InstructionEditor() {
   const handleSave = () => {
     instructionService.updateInstructions(activeTab, instructions[activeTab]);
     setIsDirty(false);
+  };
+
+  const handleReset = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
   };
 
   return (
@@ -58,17 +65,25 @@ export default function InstructionEditor() {
         placeholder={`Enter ${activeTab} instructions...`}
       />
 
-      <button
-        onClick={handleSave}
-        disabled={!isDirty}
-        className={`w-full px-4 py-2 rounded-lg mt-auto ${
-          isDirty
-            ? 'bg-blue-500 text-white hover:bg-blue-600'
-            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-        }`}
-      >
-        Save Changes
-      </button>
+      <div className="flex gap-2 mt-auto">
+        <button
+          onClick={handleSave}
+          disabled={!isDirty}
+          className={`w-full px-4 py-2 rounded-lg ${
+            isDirty
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Save Changes
+        </button>
+        <button
+          onClick={handleReset}
+          className="w-full px-4 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 } 

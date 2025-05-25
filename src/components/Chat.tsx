@@ -129,7 +129,7 @@ export default function Chat() {
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 text-left ${
+                className={`max-w-[80%] rounded-lg px-4 py-2 text-left whitespace-pre-line ${
                   message.role === 'user'
                     ? 'bg-blue-500 text-white'
                     : 'bg-white text-gray-800 shadow-md'
@@ -155,14 +155,20 @@ export default function Chat() {
 
       <div className="border-t bg-white p-4">
         <form onSubmit={handleSubmit} className="w-full">
-          <div className="flex space-x-4">
-            <input
-              type="text"
+          <div className="flex space-x-4 items-end">
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onInput={e => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = target.scrollHeight + 'px';
+              }}
+              rows={3}
               placeholder={selectedDomain ? "Describe your website issue..." : "Please select a website first"}
               disabled={!selectedDomain}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none min-h-[3em]"
+              style={{ minHeight: '3em', maxHeight: '200px' }}
             />
             <button
               type="submit"
