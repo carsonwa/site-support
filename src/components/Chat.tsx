@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import type { Message } from '../types/chat'
 import { sendMessage } from '../services/chatService'
@@ -73,6 +73,17 @@ export default function Chat() {
       ])
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      if (!isLoading && input.trim() && selectedDomain) {
+        // Manually trigger submit
+        const fakeEvent = { preventDefault: () => {} } as React.FormEvent
+        handleSubmit(fakeEvent)
+      }
     }
   }
 
@@ -192,12 +203,15 @@ export default function Chat() {
 
       {/* Escalate Ticket Button */}
       {shouldShowEscalate && (
-        <div className="p-4 bg-yellow-50 border-t border-b border-yellow-200 flex flex-col items-center">
+        <div className="p-4 bg-green-50 border-t border-b border-green-200 flex flex-col items-center">
+          <div className="mb-2 text-sm text-green-900 font-semibold text-center">
+            A SiteSupport team member is ready to assist you further. Click below and we'll take a closer look at your issue!
+          </div>
           <button
-            className="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 shadow"
+            className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow"
             onClick={() => alert('Ticket escalated! (Demo)')}
           >
-            Escalate Ticket
+            Ask SiteSupport for Help
           </button>
         </div>
       )}
@@ -213,6 +227,7 @@ export default function Chat() {
                 target.style.height = 'auto';
                 target.style.height = target.scrollHeight + 'px';
               }}
+              onKeyDown={handleInputKeyDown}
               rows={3}
               placeholder={selectedDomain ? "Describe your website issue..." : "Please select a website first"}
               disabled={!selectedDomain}
