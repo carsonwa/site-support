@@ -29,6 +29,7 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedDomain, setSelectedDomain] = useState('')
   const [selectedModel, setSelectedModel] = useState('gpt-4.1-mini')
+  const [userName, setUserName] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,7 +37,7 @@ export default function Chat() {
 
     const userMessage: Message = { 
       role: 'user', 
-      content: `[${selectedDomain}] ${input}` 
+      content: `[${selectedDomain}] ${input}` + (userName ? `\nUser name: ${userName}` : '') 
     }
     setMessages(prev => [...prev, userMessage])
     setInput('')
@@ -63,7 +64,40 @@ export default function Chat() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       <div className="bg-white border-b p-4">
-        <div className="w-[600px] mx-auto space-y-4">
+        <div className="w-full space-y-4">
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                Your Name
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your name (optional)"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
+                Select AI Model
+              </label>
+              <select
+                id="model"
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                {AVAILABLE_MODELS.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div>
             <label htmlFor="domain" className="block text-sm font-medium text-gray-700 mb-1">
               Select your website
@@ -82,29 +116,11 @@ export default function Chat() {
               ))}
             </select>
           </div>
-
-          <div>
-            <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
-              Select AI Model
-            </label>
-            <select
-              id="model"
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              {AVAILABLE_MODELS.map((model) => (
-                <option key={model.id} value={model.id}>
-                  {model.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="w-[600px] mx-auto space-y-4">
+        <div className="w-full space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
@@ -113,7 +129,7 @@ export default function Chat() {
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                className={`max-w-[80%] rounded-lg px-4 py-2 text-left ${
                   message.role === 'user'
                     ? 'bg-blue-500 text-white'
                     : 'bg-white text-gray-800 shadow-md'
@@ -138,7 +154,7 @@ export default function Chat() {
       </div>
 
       <div className="border-t bg-white p-4">
-        <form onSubmit={handleSubmit} className="w-[600px] mx-auto">
+        <form onSubmit={handleSubmit} className="w-full">
           <div className="flex space-x-4">
             <input
               type="text"

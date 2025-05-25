@@ -1,11 +1,16 @@
 import type { Message, ChatCompletionRequest, ChatCompletionResponse } from '../types/chat'
+import { instructionService } from './instructionService'
 
 const API_URL = 'https://api.openai.com/v1/chat/completions'
 
 export async function sendMessage(messages: Message[], model: string): Promise<Message> {
+  const systemMessage: Message = {
+    role: 'system',
+    content: instructionService.getCombinedInstructions()
+  };
   const request: ChatCompletionRequest = {
     model,
-    messages,
+    messages: [systemMessage, ...messages],
     temperature: 0.7,
     max_tokens: 500
   }
