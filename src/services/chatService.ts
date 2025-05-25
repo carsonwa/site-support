@@ -3,10 +3,10 @@ import { instructionService } from './instructionService'
 
 const API_URL = 'https://api.openai.com/v1/chat/completions'
 
-export async function sendMessage(messages: Message[], model: string): Promise<Message> {
+export async function sendMessage(messages: Message[], model: string, domain: string): Promise<Message> {
   const systemMessage: Message = {
     role: 'system',
-    content: instructionService.getCombinedInstructions()
+    content: instructionService.getCombinedInstructions(domain)
   };
   const request: ChatCompletionRequest = {
     model,

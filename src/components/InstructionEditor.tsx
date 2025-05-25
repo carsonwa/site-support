@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { instructionService } from '../services/instructionService';
+import metaInstructions from '../instructions/meta.md?raw';
 
 const STORAGE_KEY = 'site-support-instructions';
+type Tab = 'wordpress' | 'general' | 'meta';
 
 export default function InstructionEditor() {
   const [instructions, setInstructions] = useState(instructionService.getInstructions());
-  const [activeTab, setActiveTab] = useState<'wordpress' | 'general'>('wordpress');
+  const [activeTab, setActiveTab] = useState<Tab>('wordpress');
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function InstructionEditor() {
   };
 
   const handleSave = () => {
-    instructionService.updateInstructions(activeTab, instructions[activeTab]);
+    instructionService.updateInstructions(activeTab as 'wordpress' | 'general', instructions[activeTab]);
     setIsDirty(false);
   };
 
@@ -54,16 +56,36 @@ export default function InstructionEditor() {
           >
             General
           </button>
+          <button
+            onClick={() => setActiveTab('meta')}
+            className={`px-4 py-2 rounded-lg ${
+              activeTab === 'meta'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            Meta
+          </button>
         </div>
       </div>
 
-      <textarea
-        value={instructions[activeTab]}
-        onChange={(e) => handleContentChange(e.target.value)}
-        className="w-full mb-4 p-4 border rounded-lg font-mono text-sm resize-none"
-        style={{ height: '70vh' }}
-        placeholder={`Enter ${activeTab} instructions...`}
-      />
+      {activeTab === 'meta' ? (
+        <textarea
+          value={instructions.meta}
+          onChange={(e) => handleContentChange(e.target.value)}
+          className="w-full mb-4 p-4 border rounded-lg font-mono text-sm resize-none"
+          style={{ height: '70vh' }}
+          placeholder="Enter meta instructions..."
+        />
+      ) : (
+        <textarea
+          value={activeTab === 'wordpress' ? instructions.wordpress : instructions.general}
+          onChange={(e) => handleContentChange(e.target.value)}
+          className="w-full mb-4 p-4 border rounded-lg font-mono text-sm resize-none"
+          style={{ height: '70vh' }}
+          placeholder={`Enter ${activeTab} instructions...`}
+        />
+      )}
 
       <div className="flex gap-2 mt-auto">
         <button

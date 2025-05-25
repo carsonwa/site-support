@@ -1,9 +1,11 @@
 import wordpressInstructions from '../instructions/wordpress.md?raw';
 import generalInstructions from '../instructions/general.md?raw';
+import metaInstructionsFile from '../instructions/meta.md?raw';
 
 export interface Instructions {
   wordpress: string;
   general: string;
+  meta: string;
 }
 
 const STORAGE_KEY = 'site-support-instructions';
@@ -35,7 +37,8 @@ class InstructionService {
     const stored = loadFromStorage();
     this.instructions = stored || {
       wordpress: wordpressInstructions,
-      general: generalInstructions
+      general: generalInstructions,
+      meta: metaInstructionsFile
     };
   }
 
@@ -48,8 +51,8 @@ class InstructionService {
     saveToStorage(this.instructions);
   }
 
-  getCombinedInstructions(): string {
-    return `General Instructions:\n${this.instructions.general}\n\nWordPress Instructions:\n${this.instructions.wordpress}`;
+  getCombinedInstructions(domain: string): string {
+    return `Current domain: ${domain}\n\n${this.instructions.meta}\n\n${this.instructions.general}\n\n${this.instructions.wordpress}`;
   }
 }
 

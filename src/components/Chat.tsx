@@ -31,20 +31,24 @@ export default function Chat() {
   const [selectedModel, setSelectedModel] = useState('gpt-4.1-mini')
   const [userName, setUserName] = useState('')
 
+  // Escalate Ticket marker detection
+  const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+  const shouldShowEscalate = lastAssistantMsg && lastAssistantMsg.content.includes('[[ESCALATE_TICKET]]');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || !selectedDomain) return
 
     const userMessage: Message = { 
       role: 'user', 
-      content: `[${selectedDomain}] ${input}` + (userName ? `\nUser name: ${userName}` : '') 
+      content: input
     }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
 
     try {
-      const response = await sendMessage([...messages, userMessage], selectedModel)
+      const response = await sendMessage([...messages, userMessage], selectedModel, selectedDomain)
       setMessages(prev => [...prev, response])
     } catch (error) {
       console.error('Error:', error)
@@ -152,6 +156,17 @@ export default function Chat() {
           )}
         </div>
       </div>
+
+      {shouldShowEscalate && (
+        <div className="p-4 bg-yellow-50 border-t border-b border-yellow-200 flex flex-col items-center">
+          <button
+            className="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 shadow"
+            onClick={() => alert('Ticket escalated! (Demo)')}
+          >
+            Escalate Ticket
+          </button>
+        </div>
+      )}
 
       <div className="border-t bg-white p-4">
         <form onSubmit={handleSubmit} className="w-full">
